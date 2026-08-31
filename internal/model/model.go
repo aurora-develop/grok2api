@@ -183,6 +183,7 @@ func ListByCapability(cap Capability) []*Spec {
 
 var allModels = []Spec{
 	// --- grok.com chat ---
+	{ModelName: "grok-4.6", ModeId: ModeExpert, Tier: TierSuper, Capability: CapChat, Enabled: true, PublicName: "Grok 4.6"},
 	{ModelName: "grok-4.20-0309-non-reasoning", ModeId: ModeFast, Tier: TierBasic, Capability: CapChat, Enabled: true, PublicName: "Grok 4.20 0309 Non-Reasoning"},
 	{ModelName: "grok-4.20-0309", ModeId: ModeAuto, Tier: TierSuper, Capability: CapChat, Enabled: true, PublicName: "Grok 4.20 0309"},
 	{ModelName: "grok-4.20-0309-reasoning", ModeId: ModeExpert, Tier: TierSuper, Capability: CapChat, Enabled: true, PublicName: "Grok 4.20 0309 Reasoning"},

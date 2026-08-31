@@ -40,7 +40,7 @@ import (
 )
 
 // Project version (overridden at build time via -ldflags).
-const projectVersion = "1.0.0"
+var Version = "dev"
 
 func main() {
 	// 1. Early logging setup — read LOG_LEVEL/LOG_FILE_ENABLED before config.
@@ -53,7 +53,7 @@ func main() {
 	}
 	logger.Setup(logLevel, fileLogging, logDir, 7)
 
-	logger.Infof("application startup: service=grok2api version=%s platform=%s", projectVersion, runtime.GOOS)
+	logger.Infof("application startup: service=grok2api version=%s platform=%s", Version, runtime.GOOS)
 
 	// 2. Load configuration.
 	defaultsPath := defaultsConfigPath()

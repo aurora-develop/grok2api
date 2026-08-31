@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
     paths-ignore:
       - README.md
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Image version without the v prefix"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -22,11 +29,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read version
+      - name: Resolve version
         id: version
         shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          version="$(tr -d '[:space:]' < VERSION)"
+          if [[ -n "${INPUT_VERSION}" ]]; then
+            version="${INPUT_VERSION#v}"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="${GITHUB_SHA::12}"
+          fi
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
           echo "tag=v${version}" >> "${GITHUB_OUTPUT}"
           echo "sha_short=${GITHUB_SHA::12}" >> "${GITHUB_OUTPUT}"
@@ -52,6 +67,8 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           provenance: false
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
           tags: |
             ${{ env.GHCR_REPO }}:latest
             ${{ env.GHCR_REPO }}:${{ steps.version.outputs.version }}
