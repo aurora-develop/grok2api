@@ -2,9 +2,14 @@ name: Build and Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without the v prefix"
+        required: true
+        type: string
   push:
-    paths:
-      - VERSION
+    tags:
+      - "v*"
 
 permissions:
   contents: write
@@ -16,13 +21,21 @@ jobs:
       version: ${{ steps.rev.outputs.version }}
       tag: ${{ steps.rev.outputs.tag }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Read version
+      - name: Resolve version from tag
         id: rev
         shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          version="$(tr -d '[:space:]' < VERSION)"
+          if [[ -n "${INPUT_VERSION}" ]]; then
+            version="${INPUT_VERSION#v}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          if [[ -z "${version}" || "${version}" == "main" ]]; then
+            echo "A release tag or workflow_dispatch version is required" >&2
+            exit 1
+          fi
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
           echo "tag=v${version}" >> "${GITHUB_OUTPUT}"
 

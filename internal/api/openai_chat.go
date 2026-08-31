@@ -146,12 +146,15 @@ func (s *Server) runGrokChatWithRetry(c *gin.Context, req *chatCompletionRequest
 // runGrokChatOnce executes one chat attempt against grok.com.
 // For follow-up messages it uses /responses endpoint with conversation tracking.
 func (s *Server) runGrokChatOnce(w http.ResponseWriter, r *http.Request, lease *account.Lease, spec *model.Spec, message string, fileInputs []string, temp, topP float64, emitThink, stream bool, modelName string) error {
+	if usesGatewayChat(modelName) {
+		return s.runGatewayChatOnce(w, r, lease, message, fileInputs, emitThink, stream, modelName)
+	}
 	// Check if we have an active conversation for this token.
 	convCtx := s.ConvTracker.Get(lease.Token)
 	var (
-		payload    map[string]any
-		targetURL  string
-		isNew      bool
+		payload   map[string]any
+		targetURL string
+		isNew     bool
 	)
 	if convCtx != nil && convCtx.ConversationID != "" && convCtx.LastResponseID != "" {
 		// Follow-up message in existing conversation.

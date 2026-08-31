@@ -10,6 +10,7 @@ import (
 	fhttp "github.com/bogdanfinn/fhttp"
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
+	"golang.org/x/net/proxy"
 )
 
 // Client wraps a tls_client.HttpClient and exposes a standard-http-like API.
@@ -40,6 +41,7 @@ func New(opts ...Option) *Client {
 		tls_client.WithCookieJar(tls_client.NewCookieJar()),
 		tls_client.WithTimeoutSeconds(120),
 		tls_client.WithClientProfile(profiles.Chrome_146),
+		tls_client.WithForceHttp1(),
 		tls_client.WithNotFollowRedirects(),
 	}
 	if o.proxyURL != "" {
@@ -72,6 +74,15 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 
 // SetProxy changes the proxy at runtime.
 func (c *Client) SetProxy(raw string) error { return c.inner.SetProxy(raw) }
+
+// GetDialer returns the browser-profiled network dialer used by the wrapped client.
+func (c *Client) GetDialer() proxy.ContextDialer { return c.inner.GetDialer() }
+
+// GetTLSDialer returns the browser-profiled TLS dialer used by the wrapped client.
+func (c *Client) GetTLSDialer() tls_client.TLSDialerFunc { return c.inner.GetTLSDialer() }
+
+// CloseIdleConnections closes idle connections held by the wrapped client.
+func (c *Client) CloseIdleConnections() { c.inner.CloseIdleConnections() }
 
 // GetCookies returns cookies from the jar (as net/http.Cookie).
 func (c *Client) GetCookies(u *url.URL) []*http.Cookie {
